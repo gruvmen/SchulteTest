@@ -71,7 +71,7 @@
     <div id="game-section" style="display: none;">
         <h1 id="title-text">Кто тут самый внимательный? <img id="pepe-image" src="/static/pepe.gif" alt="Pepe" style="width: 40px; vertical-align: middle;"></h1>
         <div id="name-form">
-            <input type="text" id="player-name" placeholder="Введите ваше имя">
+            <input type="text" id="player-name" placeholder="Введите ваше имя" onkeypress="if(event.key === 'Enter') startTest()">
             <button id="start-btn" onclick="startTest()">Начать</button>
         </div>
         <div id="current-number">Ищи число: 1</div>
