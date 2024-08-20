@@ -12,19 +12,18 @@
             background-color: #FFFCE0;
             padding: 20px;
         }
-        #logo {
-            max-width: 150px;
-            margin-bottom: 20px;
-        }
         #name-input {
-            margin-top: 50px; /* Отступ сверху */
-            margin-bottom: 20px; /* Отступ снизу */
+            margin-top: 20px; /* Отступ сверху */
             padding: 10px;
             font-size: 18px;
             width: 80%;
             max-width: 300px;
             border: 2px solid #552D62;
             border-radius: 5px;
+        }
+        #logo {
+            max-width: 150px;
+            margin: 20px auto;
         }
         #start-btn {
             margin-top: 20px; /* Отступ сверху */
@@ -61,11 +60,12 @@
     </style>
 </head>
 <body>
+    <input id="name-input" type="text" placeholder="Введите ваше имя">
+
     <img id="logo" src="/static/logo.png" alt="Логотип">
 
     <div id="game-section">
         <h1 id="title-text">Кто тут самый внимательный?</h1>
-        <input id="name-input" type="text" placeholder="Введите ваше имя">
         <button id="start-btn" onclick="startTest()">Начать</button>
     </div>
 
