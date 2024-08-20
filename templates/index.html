@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Schulte Test</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600&display=swap');
         body {
-            font-family: 'Unbounded', Arial, sans-serif;
+            font-family: 'Unbounded', sans-serif;
             text-align: center;
             background-color: #FFFCE0;
             padding: 20px;
@@ -15,10 +16,12 @@
             max-width: 150px;
             margin-bottom: 20px;
         }
+        #name-form {
+            margin-bottom: 20px;
+        }
         #current-number {
             font-size: 24px;
             margin-bottom: 20px;
-            color: #552D62;
         }
         #timer {
             font-size: 24px;
@@ -51,16 +54,13 @@
             background-color: #C24996;
             color: white;
         }
-        #input-name {
-            margin-bottom: 20px;
-            font-size: 18px;
-        }
-        #result-section {
-            display: none;
+        #result-time {
+            font-size: 24px;
             margin-top: 20px;
         }
-        #ranking {
-            font-size: 18px;
+        #result-rank {
+            font-size: 20px;
+            margin-top: 10px;
             color: #552D62;
         }
     </style>
@@ -68,22 +68,22 @@
 <body>
     <img id="logo" src="/static/logo.png" alt="Логотип">
     
-    <div id="auth-section">
-        <h1>Кто тут самый внимательный? <img id="pepe-image" src="/static/pepe.gif" alt="Pepe" style="width: 40px; vertical-align: middle;"></h1>
-        <input type="text" id="input-name" placeholder="Введи своё имя" onkeypress="if(event.key === 'Enter') startTest();">
-        <button id="start-btn" onclick="startTest()">Начать</button>
-    </div>
-
     <div id="game-section" style="display: none;">
+        <h1 id="title-text">Кто тут самый внимательный? <img id="pepe-image" src="/static/pepe.gif" alt="Pepe" style="width: 40px; vertical-align: middle;"></h1>
+        <div id="name-form">
+            <input type="text" id="player-name" placeholder="Введите ваше имя">
+            <button id="start-btn" onclick="startTest()">Начать</button>
+        </div>
         <div id="current-number">Ищи число: 1</div>
         <table id="schulte-table"></table>
         <div id="timer">Время: 0.00 секунд</div>
-        <img id="pepe-sad-image" src="/static/pepesad.gif" alt="Pepe Sad" style="width: 40px; vertical-align: middle; margin-top: 20px;">
     </div>
 
-    <div id="result-section">
-        <h2 id="result-text">Ты лучший! <img src="/static/peperich.gif" alt="Pepe Rich" style="width: 40px; vertical-align: middle;"></h2>
-        <div id="ranking"></div>
+    <div id="result-section" style="display: none;">
+        <h2>Ты лучший! <img id="result-pepe-image" src="/static/peperich.gif" alt="Pepe" style="width: 40px; vertical-align: middle;"></h2>
+        <div id="result-time">Ваше время: <span id="final-time"></span> секунд</div>
+        <div id="result-rank"></div>
+        <button onclick="restartTest()">Могу еще быстрее!</button>
     </div>
 
     <script>
@@ -146,19 +146,18 @@
         }
 
         function startTest() {
-            const playerName = document.getElementById('input-name').value.trim();
+            const playerName = document.getElementById('player-name').value.trim();
             if (!playerName) {
-                alert("Введите своё имя!");
+                alert('Введите имя, чтобы начать тест.');
                 return;
             }
-
-            document.getElementById('auth-section').style.display = 'none';
-            document.getElementById('game-section').style.display = 'block';
-
+            document.getElementById('name-form').style.display = 'none';
             currentIndex = 0;
             numbers = Array.from({length: 25}, (_, i) => i + 1);
             document.getElementById('current-number').innerText = "Ищи число: 1";
             generateTable();
+            document.getElementById('game-section').style.display = 'block';
+            document.getElementById('result-section').style.display = 'none';
             startTime = new Date();
             timerInterval = setInterval(updateTimer, 100); // Обновляем таймер каждые 100 мс
 
@@ -170,37 +169,21 @@
             clearInterval(timerInterval); // Останавливаем таймер
             const endTime = new Date();
             const timeTaken = (endTime - startTime) / 1000;
-
-            // Показать результат
+            document.getElementById('final-time').innerText = timeTaken.toFixed(2);
             document.getElementById('game-section').style.display = 'none';
             document.getElementById('result-section').style.display = 'block';
-            document.getElementById('result-text').innerHTML = `Ты лучший! <img src="/static/peperich.gif" alt="Pepe Rich" style="width: 40px; vertical-align: middle;">`;
 
-            // Генерация случайного рейтинга (замени на реальный алгоритм)
-            const topPlayers = generateRandomTopPlayers();
-            let rankingHTML = '<h3>Топ 10 игроков</h3><ul>';
-            topPlayers.forEach((player, index) => {
-                rankingHTML += `<li>${index + 1}. ${player.name} — ${player.time} сек</li>`;
-            });
-            rankingHTML += `</ul><p>Ты занял ${getPlayerPosition(topPlayers, timeTaken)} место!</p>`;
-            document.getElementById('ranking').innerHTML = rankingHTML;
+            // Меняем изображение на peperich.gif и текст на "Ты лучший!"
+            document.getElementById('result-pepe-image').src = '/static/peperich.gif';
+
+            // Здесь необходимо добавить код для отображения топ-10 игроков и их результатов, а также места текущего игрока
         }
 
-        function generateRandomTopPlayers() {
-            const players = [];
-            for (let i = 0; i < 9; i++) {
-                players.push({ name: `Игрок ${i + 1}`, time: (Math.random() * 60).toFixed(2) });
-            }
-            return players.sort((a, b) => a.time - b.time);
-        }
-
-        function getPlayerPosition(topPlayers, playerTime) {
-            for (let i = 0; i < topPlayers.length; i++) {
-                if (playerTime < topPlayers[i].time) {
-                    return i + 1;
-                }
-            }
-            return topPlayers.length + 1;
+        function restartTest() {
+            document.getElementById('name-form').style.display = 'block';
+            document.getElementById('player-name').value = '';
+            document.getElementById('game-section').style.display = 'none';
+            document.getElementById('result-section').style.display = 'none';
         }
     </script>
 </body>
