@@ -16,7 +16,27 @@
             max-width: 150px;
             margin-bottom: 20px;
         }
-        #current-number, #timer, #welcome-message, #ranking {
+        #name-input {
+            margin-top: 50px; /* Отступ сверху */
+            margin-bottom: 20px; /* Отступ снизу */
+            padding: 10px;
+            font-size: 18px;
+            width: 80%;
+            max-width: 300px;
+            border: 2px solid #552D62;
+            border-radius: 5px;
+        }
+        #start-btn {
+            margin-top: 20px; /* Отступ сверху */
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            background-color: #C24996;
+            color: white;
+            border-radius: 5px;
+        }
+        #current-number, #timer {
             font-size: 24px;
             margin-top: 20px;
         }
@@ -38,45 +58,20 @@
         .cell-color-3 { background-color: #E9C32F; }
         .cell-color-4 { background-color: #FFFCE0; color: #552D62; }
         .cell-color-5 { background-color: #FFFFFF; color: #552D62; }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            margin-top: 20px;
-            border: none;
-            cursor: pointer;
-            background-color: #C24996;
-            color: white;
-        }
-        input[type="text"] {
-            font-size: 18px;
-            padding: 10px;
-            margin-top: 10px;
-            border: 2px solid #552D62;
-            color: #552D62;
-        }
     </style>
 </head>
 <body>
     <img id="logo" src="/static/logo.png" alt="Логотип">
-    
-    <div id="auth-section">
-        <h1>Введите ваше имя для начала теста</h1>
-        <input type="text" id="player-name" placeholder="Ваше имя">
+
+    <div id="game-section">
+        <h1 id="title-text">Кто тут самый внимательный?</h1>
+        <input id="name-input" type="text" placeholder="Введите ваше имя">
         <button id="start-btn" onclick="startTest()">Начать</button>
     </div>
 
-    <div id="game-section" style="display: none;">
-        <h1 id="title-text">Кто тут самый внимательный? <img id="pepe-image" src="/static/pepe.gif" alt="Pepe" style="width: 40px; vertical-align: middle;"></h1>
-        <div id="current-number"></div>
-        <table id="schulte-table"></table>
-        <div id="timer">Время: 0.00 секунд</div>
-    </div>
-
-    <div id="ranking-section" style="display: none;">
-        <h1>Результаты</h1>
-        <div id="ranking"></div>
-        <button onclick="startNewTest()">Пройти тест заново</button>
-    </div>
+    <div id="current-number" style="display:none;"></div>
+    <table id="schulte-table"></table>
+    <div id="timer" style="display:none;"></div>
 
     <script>
         let numbers = [];
@@ -84,8 +79,6 @@
         let startTime;
         let timerInterval;
         const colors = ['cell-color-1', 'cell-color-2', 'cell-color-3', 'cell-color-4', 'cell-color-5'];
-
-        let players = [];
 
         function shuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
@@ -98,7 +91,7 @@
         function generateTable() {
             const table = document.getElementById('schulte-table');
             table.innerHTML = '';
-            shuffle(numbers);
+            shuffle(numbers); // Перемешиваем числа перед каждой генерацией таблицы
             for (let i = 0; i < 5; i++) {
                 const row = document.createElement('tr');
                 for (let j = 0; j < 5; j++) {
@@ -128,66 +121,45 @@
                     if (currentIndex === 25) {
                         endTest();
                     } else {
-                        generateTable();
+                        generateTable(); // Перемешивание таблицы после каждого правильного нажатия
                     }
-                }, 300);
+                }, 300); // Ожидание 300 мс перед перемешиванием
             } else {
                 cell.style.backgroundColor = 'red';
                 setTimeout(() => {
-                    cell.style.backgroundColor = colors[number % colors.length];
-                }, 300);
+                    cell.className = colors[number % colors.length]; // Возвращаем исходный цвет
+                }, 500);
             }
         }
 
         function startTest() {
-            const playerName = document.getElementById('player-name').value;
-            if (playerName.trim() === '') {
-                alert('Введите ваше имя');
+            const playerName = document.getElementById('name-input').value.trim();
+            if (playerName === '') {
+                alert('Введите ваше имя!');
                 return;
             }
-            document.getElementById('auth-section').style.display = 'none';
-            document.getElementById('game-section').style.display = 'block';
 
             currentIndex = 0;
             numbers = Array.from({length: 25}, (_, i) => i + 1);
             document.getElementById('current-number').innerText = "Ищи число: 1";
+            document.getElementById('current-number').style.display = 'block';
+            document.getElementById('timer').style.display = 'block';
             generateTable();
+            document.getElementById('start-btn').style.display = 'none';
+            document.getElementById('name-input').style.display = 'none';
             startTime = new Date();
-            timerInterval = setInterval(updateTimer, 100);
-
-            document.getElementById('pepe-image').src = '/static/pepesad.gif';
+            timerInterval = setInterval(updateTimer, 100); // Обновляем таймер каждые 100 мс
         }
 
         function endTest() {
-            clearInterval(timerInterval);
+            clearInterval(timerInterval); // Останавливаем таймер
             const endTime = new Date();
             const timeTaken = (endTime - startTime) / 1000;
-            const playerName = document.getElementById('player-name').value;
-
-            players.push({ name: playerName, time: timeTaken });
-            players.sort((a, b) => a.time - b.time);
-            const top10Players = players.slice(0, 10);
-            const playerRanking = players.findIndex(player => player.name === playerName) + 1;
-
-            let rankingHTML = '<ol>';
-            top10Players.forEach(player => {
-                rankingHTML += `<li>${player.name}: ${player.time.toFixed(2)} секунд</li>`;
-            });
-            rankingHTML += '</ol>';
-            rankingHTML += `<p>Ваше место: ${playerRanking}</p>`;
-
-            document.getElementById('ranking').innerHTML = rankingHTML;
-            document.getElementById('game-section').style.display = 'none';
-            document.getElementById('ranking-section').style.display = 'block';
-
-            document.getElementById('title-text').innerHTML = 'Ты лучший! <img id="pepe-image" src="/static/peperich.gif" alt="Pepe" style="width: 40px; vertical-align: middle;">';
-        }
-
-        function startNewTest() {
-            document.getElementById('ranking-section').style.display = 'none';
-            document.getElementById('auth-section').style.display = 'block';
-            document.getElementById('player-name').value = '';
-            document.getElementById('title-text').innerText = 'Кто тут самый внимательный?';
+            alert(`Тест завершён! Ваше время: ${timeTaken.toFixed(2)} секунд`);
+            document.getElementById('start-btn').style.display = 'inline-block';
+            document.getElementById('name-input').style.display = 'block';
+            document.getElementById('current-number').style.display = 'none';
+            document.getElementById('timer').style.display = 'none';
         }
     </script>
 </body>
