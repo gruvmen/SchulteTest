@@ -16,10 +16,11 @@
             margin-top: 20px; /* Отступ сверху */
             padding: 10px;
             font-size: 18px;
-            width: 80%;
+            width: 60%;
             max-width: 300px;
             border: 2px solid #552D62;
             border-radius: 5px;
+            display: inline-block; /* Для размещения кнопки рядом */
         }
         #logo {
             max-width: 150px;
@@ -34,6 +35,8 @@
             background-color: #C24996;
             color: white;
             border-radius: 5px;
+            display: inline-block; /* Для размещения рядом с полем ввода */
+            vertical-align: top; /* Совместить по вертикали с полем ввода */
         }
         #current-number, #timer {
             font-size: 24px;
@@ -61,12 +64,12 @@
 </head>
 <body>
     <input id="name-input" type="text" placeholder="Введите ваше имя" onkeydown="if (event.key === 'Enter') startTest();">
+    <button id="start-btn" onclick="startTest()">Начать</button>
 
     <img id="logo" src="/static/logo.png" alt="Логотип">
 
     <div id="game-section">
         <h1 id="title-text">Кто тут самый внимательный? 😎</h1>
-        <button id="start-btn" onclick="startTest()">Начать</button>
     </div>
 
     <div id="current-number" style="display:none;"></div>
