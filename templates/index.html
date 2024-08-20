@@ -55,6 +55,14 @@
             margin-bottom: 20px;
             font-size: 18px;
         }
+        #result-section {
+            display: none;
+            margin-top: 20px;
+        }
+        #ranking {
+            font-size: 18px;
+            color: #552D62;
+        }
     </style>
 </head>
 <body>
@@ -62,7 +70,7 @@
     
     <div id="auth-section">
         <h1>Кто тут самый внимательный? <img id="pepe-image" src="/static/pepe.gif" alt="Pepe" style="width: 40px; vertical-align: middle;"></h1>
-        <input type="text" id="input-name" placeholder="Введи своё имя">
+        <input type="text" id="input-name" placeholder="Введи своё имя" onkeypress="if(event.key === 'Enter') startTest();">
         <button id="start-btn" onclick="startTest()">Начать</button>
     </div>
 
@@ -70,6 +78,12 @@
         <div id="current-number">Ищи число: 1</div>
         <table id="schulte-table"></table>
         <div id="timer">Время: 0.00 секунд</div>
+        <img id="pepe-sad-image" src="/static/pepesad.gif" alt="Pepe Sad" style="width: 40px; vertical-align: middle; margin-top: 20px;">
+    </div>
+
+    <div id="result-section">
+        <h2 id="result-text">Ты лучший! <img src="/static/peperich.gif" alt="Pepe Rich" style="width: 40px; vertical-align: middle;"></h2>
+        <div id="ranking"></div>
     </div>
 
     <script>
@@ -145,7 +159,6 @@
             numbers = Array.from({length: 25}, (_, i) => i + 1);
             document.getElementById('current-number').innerText = "Ищи число: 1";
             generateTable();
-            document.getElementById('start-btn').style.display = 'none';
             startTime = new Date();
             timerInterval = setInterval(updateTimer, 100); // Обновляем таймер каждые 100 мс
 
@@ -157,17 +170,38 @@
             clearInterval(timerInterval); // Останавливаем таймер
             const endTime = new Date();
             const timeTaken = (endTime - startTime) / 1000;
-            alert(`Тест завершён! Ваше время: ${timeTaken.toFixed(2)} секунд`);
-            document.getElementById('start-btn').style.display = 'inline-block';
 
-            // Меняем изображение на peperich.gif и текст на "Ты лучший!"
-            document.getElementById('pepe-image').src = '/static/peperich.gif';
-            document.getElementById('title-text').innerHTML = 'Ты лучший! <img id="pepe-image" src="/static/peperich.gif" alt="Pepe" style="width: 40px; vertical-align: middle;">';
+            // Показать результат
+            document.getElementById('game-section').style.display = 'none';
+            document.getElementById('result-section').style.display = 'block';
+            document.getElementById('result-text').innerHTML = `Ты лучший! <img src="/static/peperich.gif" alt="Pepe Rich" style="width: 40px; vertical-align: middle;">`;
 
-            // Убираем подсказку с цифрой
-            document.getElementById('current-number').style.display = 'none';
+            // Генерация случайного рейтинга (замени на реальный алгоритм)
+            const topPlayers = generateRandomTopPlayers();
+            let rankingHTML = '<h3>Топ 10 игроков</h3><ul>';
+            topPlayers.forEach((player, index) => {
+                rankingHTML += `<li>${index + 1}. ${player.name} — ${player.time} сек</li>`;
+            });
+            rankingHTML += `</ul><p>Ты занял ${getPlayerPosition(topPlayers, timeTaken)} место!</p>`;
+            document.getElementById('ranking').innerHTML = rankingHTML;
+        }
+
+        function generateRandomTopPlayers() {
+            const players = [];
+            for (let i = 0; i < 9; i++) {
+                players.push({ name: `Игрок ${i + 1}`, time: (Math.random() * 60).toFixed(2) });
+            }
+            return players.sort((a, b) => a.time - b.time);
+        }
+
+        function getPlayerPosition(topPlayers, playerTime) {
+            for (let i = 0; i < topPlayers.length; i++) {
+                if (playerTime < topPlayers[i].time) {
+                    return i + 1;
+                }
+            }
+            return topPlayers.length + 1;
         }
     </script>
 </body>
 </html>
-
