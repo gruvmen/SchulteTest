@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Schulte Test</title>
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Unbounded', sans-serif;
             text-align: center;
             background-color: #FFFCE0;
             padding: 20px;
@@ -15,15 +16,9 @@
             max-width: 150px;
             margin-bottom: 20px;
         }
-        #current-number {
-            font-size: 24px;
-            margin-bottom: 20px;
-            display: none; /* Скрываем текст до начала теста */
-        }
-        #timer {
+        #current-number, #timer, #welcome-message, #ranking {
             font-size: 24px;
             margin-top: 20px;
-            display: none; /* Скрываем текст до начала теста */
         }
         table {
             margin: 0 auto;
@@ -52,17 +47,35 @@
             background-color: #C24996;
             color: white;
         }
+        input[type="text"] {
+            font-size: 18px;
+            padding: 10px;
+            margin-top: 10px;
+            border: 2px solid #552D62;
+            color: #552D62;
+        }
     </style>
 </head>
 <body>
     <img id="logo" src="/static/logo.png" alt="Логотип">
     
-    <div id="game-section">
+    <div id="auth-section">
+        <h1>Введите ваше имя для начала теста</h1>
+        <input type="text" id="player-name" placeholder="Ваше имя">
+        <button id="start-btn" onclick="startTest()">Начать</button>
+    </div>
+
+    <div id="game-section" style="display: none;">
         <h1 id="title-text">Кто тут самый внимательный? <img id="pepe-image" src="/static/pepe.gif" alt="Pepe" style="width: 40px; vertical-align: middle;"></h1>
-        <div id="current-number">Ищи число: 1</div>
+        <div id="current-number"></div>
         <table id="schulte-table"></table>
         <div id="timer">Время: 0.00 секунд</div>
-        <button id="start-btn" onclick="startTest()">Начать</button>
+    </div>
+
+    <div id="ranking-section" style="display: none;">
+        <h1>Результаты</h1>
+        <div id="ranking"></div>
+        <button onclick="startNewTest()">Пройти тест заново</button>
     </div>
 
     <script>
@@ -71,6 +84,8 @@
         let startTime;
         let timerInterval;
         const colors = ['cell-color-1', 'cell-color-2', 'cell-color-3', 'cell-color-4', 'cell-color-5'];
+
+        let players = [];
 
         function shuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
@@ -83,7 +98,7 @@
         function generateTable() {
             const table = document.getElementById('schulte-table');
             table.innerHTML = '';
-            shuffle(numbers); // Перемешиваем числа перед каждой генерацией таблицы
+            shuffle(numbers);
             for (let i = 0; i < 5; i++) {
                 const row = document.createElement('tr');
                 for (let j = 0; j < 5; j++) {
@@ -109,45 +124,70 @@
                 cell.style.backgroundColor = 'lightgreen';
                 setTimeout(() => {
                     currentIndex++;
+                    document.getElementById('current-number').innerText = `Ищи число: ${currentIndex + 1}`;
                     if (currentIndex === 25) {
                         endTest();
                     } else {
-                        document.getElementById('current-number').innerText = `Ищи число: ${currentIndex + 1}`;
-                        generateTable(); // Перемешивание таблицы после каждого правильного нажатия
+                        generateTable();
                     }
-                }, 300); // Ожидание 300 мс перед перемешиванием
+                }, 300);
             } else {
                 cell.style.backgroundColor = 'red';
                 setTimeout(() => {
-                    cell.style.backgroundColor = ''; // Возвращаем исходный цвет
-                }, 300); // Подсвечиваем неправильную цифру красным на 300 мс
+                    cell.style.backgroundColor = colors[number % colors.length];
+                }, 300);
             }
         }
 
         function startTest() {
+            const playerName = document.getElementById('player-name').value;
+            if (playerName.trim() === '') {
+                alert('Введите ваше имя');
+                return;
+            }
+            document.getElementById('auth-section').style.display = 'none';
+            document.getElementById('game-section').style.display = 'block';
+
             currentIndex = 0;
             numbers = Array.from({length: 25}, (_, i) => i + 1);
             document.getElementById('current-number').innerText = "Ищи число: 1";
-            document.getElementById('current-number').style.display = 'block'; // Показываем текст
-            document.getElementById('timer').style.display = 'block'; // Показываем таймер
-            document.getElementById('title-text').innerHTML = 'Кто тут самый внимательный? <img id="pepe-image" src="/static/pepesad.gif" alt="Pepe" style="width: 40px; vertical-align: middle;">'; // Восстанавливаем начальный текст
             generateTable();
-            document.getElementById('start-btn').style.display = 'none';
             startTime = new Date();
-            timerInterval = setInterval(updateTimer, 100); // Обновляем таймер каждые 100 мс
+            timerInterval = setInterval(updateTimer, 100);
+
+            document.getElementById('pepe-image').src = '/static/pepesad.gif';
         }
 
         function endTest() {
-            clearInterval(timerInterval); // Останавливаем таймер
+            clearInterval(timerInterval);
             const endTime = new Date();
             const timeTaken = (endTime - startTime) / 1000;
-            alert(`Тест завершён! Ваше время: ${timeTaken.toFixed(2)} секунд`);
-            document.getElementById('start-btn').style.display = 'inline-block';
-            document.getElementById('current-number').style.display = 'none'; // Скрываем текст "Ищи число"
+            const playerName = document.getElementById('player-name').value;
 
-            // Меняем изображение на peperich.gif и текст на "Ты лучший!"
-            document.getElementById('pepe-image').src = '/static/peperich.gif';
+            players.push({ name: playerName, time: timeTaken });
+            players.sort((a, b) => a.time - b.time);
+            const top10Players = players.slice(0, 10);
+            const playerRanking = players.findIndex(player => player.name === playerName) + 1;
+
+            let rankingHTML = '<ol>';
+            top10Players.forEach(player => {
+                rankingHTML += `<li>${player.name}: ${player.time.toFixed(2)} секунд</li>`;
+            });
+            rankingHTML += '</ol>';
+            rankingHTML += `<p>Ваше место: ${playerRanking}</p>`;
+
+            document.getElementById('ranking').innerHTML = rankingHTML;
+            document.getElementById('game-section').style.display = 'none';
+            document.getElementById('ranking-section').style.display = 'block';
+
             document.getElementById('title-text').innerHTML = 'Ты лучший! <img id="pepe-image" src="/static/peperich.gif" alt="Pepe" style="width: 40px; vertical-align: middle;">';
+        }
+
+        function startNewTest() {
+            document.getElementById('ranking-section').style.display = 'none';
+            document.getElementById('auth-section').style.display = 'block';
+            document.getElementById('player-name').value = '';
+            document.getElementById('title-text').innerText = 'Кто тут самый внимательный?';
         }
     </script>
 </body>
