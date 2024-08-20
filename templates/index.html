@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schulte Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #FFFCE0;
+            padding: 20px;
+        }
+        #logo {
+            max-width: 150px;
+            margin-bottom: 20px;
+        }
+        #current-number {
+            font-size: 24px;
+            margin-bottom: 20px;
+            display: none; /* Скрываем текст до начала теста */
+        }
+        #timer {
+            font-size: 24px;
+            margin-top: 20px;
+            display: none; /* Скрываем текст до начала теста */
+        }
+        table {
+            margin: 0 auto;
+            border-collapse: collapse;
+        }
+        td {
+            width: 60px;
+            height: 60px;
+            border: 2px solid #552D62;
+            text-align: center;
+            font-size: 24px;
+            cursor: pointer;
+            color: #FFFCE0;
+        }
+        .cell-color-1 { background-color: #C24996; }
+        .cell-color-2 { background-color: #552D62; }
+        .cell-color-3 { background-color: #E9C32F; }
+        .cell-color-4 { background-color: #FFFCE0; color: #552D62; }
+        .cell-color-5 { background-color: #FFFFFF; color: #552D62; }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin-top: 20px;
+            border: none;
+            cursor: pointer;
+            background-color: #C24996;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <img id="logo" src="/static/logo.png" alt="Логотип">
+    
+    <div id="game-section">
+        <h1 id="title-text">Кто тут самый внимательный? <img id="pepe-image" src="/static/pepe.gif" alt="Pepe" style="width: 40px; vertical-align: middle;"></h1>
+        <div id="current-number">Ищи число: 1</div>
+        <table id="schulte-table"></table>
+        <div id="timer">Время: 0.00 секунд</div>
+        <button id="start-btn" onclick="startTest()">Начать</button>
+    </div>
+
+    <script>
+        let numbers = [];
+        let currentIndex = 0;
+        let startTime;
+        let timerInterval;
+        const colors = ['cell-color-1', 'cell-color-2', 'cell-color-3', 'cell-color-4', 'cell-color-5'];
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function generateTable() {
+            const table = document.getElementById('schulte-table');
+            table.innerHTML = '';
+            shuffle(numbers); // Перемешиваем числа перед каждой генерацией таблицы
+            for (let i = 0; i < 5; i++) {
+                const row = document.createElement('tr');
+                for (let j = 0; j < 5; j++) {
+                    const cell = document.createElement('td');
+                    const number = numbers[i * 5 + j];
+                    cell.innerText = number;
+                    cell.className = colors[number % colors.length];
+                    cell.onclick = () => handleClick(number, cell);
+                    row.appendChild(cell);
+                }
+                table.appendChild(row);
+            }
+        }
+
+        function updateTimer() {
+            const now = new Date();
+            const timeTaken = (now - startTime) / 1000;
+            document.getElementById('timer').innerText = `Время: ${timeTaken.toFixed(2)} секунд`;
+        }
+
+        function handleClick(number, cell) {
+            if (number === currentIndex + 1) {
+                cell.style.backgroundColor = 'lightgreen';
+                setTimeout(() => {
+                    currentIndex++;
+                    if (currentIndex === 25) {
+                        endTest();
+                    } else {
+                        document.getElementById('current-number').innerText = `Ищи число: ${currentIndex + 1}`;
+                        generateTable(); // Перемешивание таблицы после каждого правильного нажатия
+                    }
+                }, 300); // Ожидание 300 мс перед перемешиванием
+            } else {
+                cell.style.backgroundColor = 'red';
+                setTimeout(() => {
+                    cell.style.backgroundColor = ''; // Возвращаем исходный цвет
+                }, 300); // Подсвечиваем неправильную цифру красным на 300 мс
+            }
+        }
+
+        function startTest() {
+            currentIndex = 0;
+            numbers = Array.from({length: 25}, (_, i) => i + 1);
+            document.getElementById('current-number').innerText = "Ищи число: 1";
+            document.getElementById('current-number').style.display = 'block'; // Показываем текст
+            document.getElementById('timer').style.display = 'block'; // Показываем таймер
+            document.getElementById('title-text').innerHTML = 'Кто тут самый внимательный? <img id="pepe-image" src="/static/pepesad.gif" alt="Pepe" style="width: 40px; vertical-align: middle;">'; // Восстанавливаем начальный текст
+            generateTable();
+            document.getElementById('start-btn').style.display = 'none';
+            startTime = new Date();
+            timerInterval = setInterval(updateTimer, 100); // Обновляем таймер каждые 100 мс
+        }
+
+        function endTest() {
+            clearInterval(timerInterval); // Останавливаем таймер
+            const endTime = new Date();
+            const timeTaken = (endTime - startTime) / 1000;
+            alert(`Тест завершён! Ваше время: ${timeTaken.toFixed(2)} секунд`);
+            document.getElementById('start-btn').style.display = 'inline-block';
+            document.getElementById('current-number').style.display = 'none'; // Скрываем текст "Ищи число"
+
+            // Меняем изображение на peperich.gif и текст на "Ты лучший!"
+            document.getElementById('pepe-image').src = '/static/peperich.gif';
+            document.getElementById('title-text').innerHTML = 'Ты лучший! <img id="pepe-image" src="/static/peperich.gif" alt="Pepe" style="width: 40px; vertical-align: middle;">';
+        }
+    </script>
+</body>
+</html>
