@@ -60,12 +60,12 @@
     </style>
 </head>
 <body>
-    <input id="name-input" type="text" placeholder="Введите ваше имя">
+    <input id="name-input" type="text" placeholder="Введите ваше имя" onkeydown="if (event.key === 'Enter') startTest();">
 
     <img id="logo" src="/static/logo.png" alt="Логотип">
 
     <div id="game-section">
-        <h1 id="title-text">Кто тут самый внимательный?</h1>
+        <h1 id="title-text">Кто тут самый внимательный? 😎</h1>
         <button id="start-btn" onclick="startTest()">Начать</button>
     </div>
 
